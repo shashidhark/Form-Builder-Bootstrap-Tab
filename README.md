@@ -9,3 +9,4 @@ Default style
 New style with bootstrap
 ![New style with bootstrap](https://raw.githubusercontent.com/shashidhark/Form-Builder-Bootstrap-Tab/master/pic2.png)
 
+Link to form builder plugin : https://formbuilder.readthedocs.io/en/latest/formBuilder/demos/tabs/
