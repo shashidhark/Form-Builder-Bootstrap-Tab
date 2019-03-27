@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+  	<script src="http://formbuilder.online/assets/js/form-builder.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  	<style type="text/css">
+  		li.active {
+  			font-weight: bold;
+  			color:blue;
+  		}
+
+  		.tab-title{
+  			color:black;
+  			font-style: italic;
+  		}
+  	</style>
+  </head>
+  <body>
+    <form class="build-wrap" id="form-builder-pages">
+      <ul id="tabs" class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#page-1" class="tab-title" data-toggle="tab">Section 1</a></li>
+        <li id="add-page-tab"><a href="#" class="add-page">+</a></li>
+      </ul>
+      <div class="tab-content"> 
+      	<div id="page-1" class="tab-pane fb-editor active"></div>
+      </div>
+    </form>
+    <button id="save">Save</button>
+    <script>
+	  jQuery(function($) {
+	  	var fbOptions = {
+        subtypes: {
+            text: [
+                'datetime-local'
+            ]
+        },
+        onSave: function (e, formData) {
+        },
+        stickyControls: {
+            enable: true
+        },
+        sortableControls: true,
+        disableInjectedStyle: false,
+        disabledAttrs: [
+            'placeholder',
+            'inline',
+            'description',
+            'other',
+            'access',
+            'toggle'
+        ],
+        controlOrder: [
+            'text',
+            'textarea',
+            'number',
+            'select',
+            'checkbox-group',
+            'radio-group',
+        ],
+        disableFields: [
+            'autocomplete',
+            'checkbox',
+            'date',
+            'file',
+            'hidden',
+            'starRating',
+            'tinyMCE',
+            'header',
+            'paragraph',
+            'button'
+        ],
+        disabledFieldButtons: {
+            text: [
+                'copy'
+            ]
+        },
+        disabledActionButtons: [
+            'data', 'save', 'clear'
+        ],
+        showActionButtons: true,
+    	};
+
+    	var $fbPages = $(document.getElementById("form-builder-pages"));
+    	var addPageTab = document.getElementById("add-page-tab");
+    	var fbInstances = [];
+    	var editing = true;
+
+    	var setIntialTab = function(){
+        console.log("Called set tab");
+        var fbObj = $("#page-1").formBuilder(fbOptions)
+        fbObj.tabId = 1;
+        fbInstances.push(fbObj); 
+    	}
+
+    	var removePage = function(){
+        var tabId = $(this).data("tabid");
+        fbInstances = fbInstances.filter(fbObj => fbObj.tabId !== tabId)
+
+        $("#tabs").find("li[data-tabid="+tabId+"]").remove()
+        $("#page-"+tabId+"").remove()
+        $("#tabs").find("li[data-tabid="+(tabId-1)+"] a:first-child").click()
+    	}
+
+    	if ($('input[name="formFieldData"]').val()) {
+        var data = JSON.parse($('input[name="formFieldData"]').val());
+        fbOptions.formData = JSON.stringify(data[0]);  
+        setIntialTab();
+
+        for(var i=1; i<data.length; i++){
+            onClickNewTabButton(JSON.stringify(data[i]))
+        }     
+    	}
+    	else{
+        setIntialTab()
+    	}
+
+    	function toggleEdit() {
+        document.body.classList.toggle('form-rendered', editing);
+        return editing = !editing;
+    	}    
+    
+    	function onClickNewTabButton(formData) {
+        var isEditMode = typeof(formData) === "string"; //String if in EditMode, Otherwise this will be called from PageAdd event
+        if(isEditMode){
+            var $self = $("#add-page-tab")
+        }
+        else{
+            $self = $(this);
+            formData.preventDefault();
+        }
+
+        var tabCount = $("#tabs").children().length;
+        tabId = "page-" + tabCount.toString(),
+        $self.closest('li').before('<li><a class="tab-title" data-toggle="tab" href="#page-' + tabCount + '">Section '+tabCount+'</a></li>');
+        $('.tab-content').append('<div class="tab-pane fb-editor" id="' + tabId + '"></div>');
+        
+        if(isEditMode)
+            fbOptions.formData = formData;
+
+        var fbObj = $("#"+tabId).formBuilder(fbOptions)
+        fbObj.tabId = tabCount;
+        fbInstances.push(fbObj);
+        $('#tabs li:nth-child(' + tabCount + ') a').click(); 
+    	};
+    
+    	addPageTab.onclick = onClickNewTabButton;
+
+    	$(document.getElementById("save")).click(function() {
+        var allData = fbInstances.map(function(fb) {
+            return JSON.parse(fb.formData);
+        });
+
+        console.log(JSON.stringify(allData));
+        alert("Check console..");
+    	});   
+	  });
+  </script>
+  </body>
+</html>
