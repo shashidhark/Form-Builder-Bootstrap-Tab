@@ -40,7 +40,8 @@
 		    e.preventDefault()
 		    e.stopPropagation()
 		    $("#"+$(this).data('tabid')).remove()
-		    $(this).closest('li').prev().find("a").click();        
+		    if($(this).closest('li').hasClass('active'))
+            	$(this).closest('li').prev().find("a").click();
 		    $(this).closest('li').remove();        
 		});
 
